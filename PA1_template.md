@@ -6,7 +6,8 @@ output:
 ---
 
 ## Load Necessary Libraries
-```{r, results='hide', message=FALSE}
+
+```r
 library(lubridate)
 library(dplyr)
 library(ggplot2)
@@ -15,7 +16,8 @@ library(ggplot2)
 
 ## Loading and preprocessing the data
 
-```{r}
+
+```r
 unzip("activity.zip", overwrite = TRUE)
 activity <- read.csv("activity.csv")
 
@@ -25,7 +27,8 @@ activity$date <- ymd(activity$date)
 
 
 ## What is mean total number of steps taken per day?
-```{r}
+
+```r
 daily_avg_steps <- activity %>% group_by(date) %>% summarize(total_steps = sum(steps, na.rm = TRUE))
 mean_steps <- mean(daily_avg_steps$total_steps, na.rm = TRUE)
 median_steps <- median(daily_avg_steps$total_steps, na.rm = TRUE)
@@ -34,10 +37,13 @@ hist(daily_avg_steps$total_steps, breaks=10,
      main = "Histogram of Total Daily Steps")
 ```
 
-The average number of steps taken per day is `r format(mean_steps,digits=0,scientific=FALSE)` and the median number of steps taken per day is `r format(median_steps,digits=0,scientific=FALSE)`.
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
+The average number of steps taken per day is 9354 and the median number of steps taken per day is 10395.
 
 ## What is the average daily activity pattern?
-```{r}
+
+```r
 interval_avg_steps <- activity %>% group_by(interval) %>% summarize(avg_steps = mean(steps, na.rm = TRUE))
 max_interval <- with(interval_avg_steps,interval[which.max(avg_steps)])
 max_hour <- floor(max_interval / 60)
@@ -55,14 +61,15 @@ with(interval_avg_steps,plot(interval,avg_steps,
                              type="l",
                              xlab="Interval",ylab="Average Steps",
                              main="Average Number of Steps Over Course of Day"))
-
-
 ```
 
-The interval `r max_interval` contains the maximum average number of steps across all days. This interval starts at `r max_time`.
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+
+The interval 835 contains the maximum average number of steps across all days. This interval starts at 1:55 PM.
 
 ## Imputing missing values
-```{r}
+
+```r
 missing_rows <- sum(is.na(activity$steps))
 total_rows <- nrow(activity)
 
@@ -74,6 +81,13 @@ daily_avg_steps_imp <- activity_imp %>% group_by(date) %>% summarize(total_steps
 mean_steps_imp <- mean(daily_avg_steps_imp$total_steps, na.rm = TRUE)
 median_steps_imp <- median(daily_avg_steps_imp$total_steps, na.rm = TRUE)
 print(mean_steps_imp)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 mean_direction <- ifelse(mean_steps_imp >= mean_steps, "up", "down")
 median_direction <- ifelse(median_steps_imp >= median_steps, "up", "down")
 hist(daily_avg_steps_imp$total_steps, breaks=10, 
@@ -81,11 +95,14 @@ hist(daily_avg_steps_imp$total_steps, breaks=10,
      main = "Histogram of Total Daily Steps with Missing Data Imputed")
 ```
 
-`r missing_rows` out of `r total_rows` rows are missing data. We can replace the missing values with the average value for that interval. We have done this in order to create the histogram above. After imputing the values for the missing data, the average number of daily steps is `r format(mean_steps_imp,digits=0,scientific=FALSE)` and the median number of daily steps is `r format(median_steps_imp,digits=0,scientific=FALSE)`. The average number of steps has gone `r mean_direction` and the median number of steps has gone `r median_direction`.
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
+
+2304 out of 17568 rows are missing data. We can replace the missing values with the average value for that interval. We have done this in order to create the histogram above. After imputing the values for the missing data, the average number of daily steps is 10766 and the median number of daily steps is 10766. The average number of steps has gone up and the median number of steps has gone up.
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
-```{r}
+
+```r
 activity_imp$isWeekend <- ifelse(wday(activity_imp$date) > 5, "Weekend", "Weekday")
 avg_steps <- activity_imp %>% group_by(interval,isWeekend) %>% summarize(steps = mean(steps, na.rm = TRUE))
 ggplot(avg_steps, aes(x=interval,y=steps)) + 
@@ -93,3 +110,5 @@ ggplot(avg_steps, aes(x=interval,y=steps)) +
     facet_grid(rows = vars(isWeekend)) +
     labs(x = "Interval", y = "Number of Steps")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
